@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Онлайн-монастырь · Ново-Нямецкий</title>
+<style>
+:root{--bg:#f4eddf;--ink:#2b2118;--card:#fffaf0;--line:#cdbb98;--accent:#7a2e2e;--on:#fff;--wall:#8a7455;--ground:#e4dac0;--bld:#f3e7cc;--sel:#e9c98a;--mut:#6b5b48;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1611;--ink:#efe6d4;--card:#262018;--line:#4a3f30;--accent:#d98a7a;--on:#1b1611;--wall:#7c6a4f;--ground:#2a2319;--bld:#3a3022;--sel:#6b5430;--mut:#b5a58c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1b1611;--ink:#efe6d4;--card:#262018;--line:#4a3f30;--accent:#d98a7a;--on:#1b1611;--wall:#7c6a4f;--ground:#2a2319;--bld:#3a3022;--sel:#6b5430;--mut:#b5a58c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,"Times New Roman",serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:640px;margin:0 auto;padding:14px}
+h1{font-size:22px;margin:6px 0}h2{font-size:17px;margin:0 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+input,select{width:100%;padding:11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+select{width:auto;padding:6px;margin:0}
+button{font:inherit;padding:10px 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
+.mut{color:var(--mut);font-size:14px}.err{color:var(--accent);min-height:20px;font-size:14px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--sel);font-size:14px}
+svg{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--ground)}
+.b{cursor:pointer}.b rect{fill:var(--bld);stroke:var(--wall);stroke-width:1.5}
+.b.sel rect{fill:var(--sel);stroke:var(--accent);stroke-width:2.5}.b text{fill:var(--ink);font-family:Georgia,serif}
+.role,.u{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.role:first-of-type,.u:first-of-type{border-top:0}
+.u{flex-wrap:wrap}
+ul{padding-left:18px;margin:6px 0}
+.note{border-left:4px solid var(--accent);background:var(--sel)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>⛪ Онлайн-монастырь</h1>
+<p class="mut" style="margin-top:0">Схематичная карта обители Ново-Нямецкого монастыря</p>
+
+<section id="auth" class="card">
+  <h2>Вход в обитель</h2>
+  <input id="l" placeholder="Логин (3–16 знаков)" autocomplete="username" maxlength="16">
+  <input id="p" type="password" placeholder="Пароль (от 4 знаков)" autocomplete="current-password" maxlength="64">
+  <div class="err" id="err"></div>
+  <div class="row"><button id="bin">Войти</button><button id="breg" class="ghost">Зарегистрироваться</button></div>
+  <p class="mut">Каждый новый насельник начинает путь послушником.</p>
+</section>
+
+<section id="game" class="hide">
+  <div class="card row sp">
+    <div><b id="who"></b><br><span class="pill" id="rolen"></span> <span class="mut" id="pts"></span></div>
+    <button class="ghost" id="out">Выйти</button>
+  </div>
+  <div class="card note hide" id="ann"></div>
+  <svg id="map" viewBox="0 0 400 440" role="img" aria-label="Карта монастыря"></svg>
+  <div class="card" id="panel"></div>
+  <div class="card"><h2>Послушания и чины</h2><div id="roles"></div></div>
+  <div class="card"><h2>Братия</h2><div id="roster"></div></div>
+  <div class="card"><h2>Летопись</h2><ul id="log"></ul></div>
+  <div class="card"><h2>Сменить пароль</h2>
+    <input id="npw" type="password" placeholder="Новый пароль (от 4 знаков)" maxlength="64" autocomplete="new-password">
+    <div class="row"><button class="ghost" id="npb">Сменить</button><span class="mut" id="npm"></span></div></div>
+  <div class="card hide" id="adm"><h2>🛡 Админ-панель архиепископа</h2>
+    <div class="row"><input id="annin" placeholder="Объявление для братии" maxlength="140" style="flex:1;min-width:0"><button id="annb">Опубликовать</button></div>
+    <div class="err" id="admmsg"></div>
+    <div id="ulist"></div>
+  </div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ====== НАСТРОЙКА: вставьте данные из Supabase (Project Settings → API) ======
+const SUPABASE_URL="https://gsszvglmnagacvipvrjg.supabase.co";
+const SUPABASE_KEY="sb_publishable_xTsVoOcMo5A_KpYIhFZ7fw_xul5uywa";
+const DOMAIN="gmail.com"; // служебный домен для скрытой почты; письма не отправляются
+// ============================================================================
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ROLES={
+ novice:{n:"Послушник",min:0,home:[],d:"Начало пути: молитва и труд."},
+ lib:{n:"Библиотекарь",min:15,home:["lib"],d:"Хранит рукописи и книги."},
+ bell:{n:"Звонарь",min:15,home:["bell"],d:"Созывает братию колокольным звоном."},
+ cook:{n:"Трапезник",min:15,home:["ref"],d:"Заботится о братской трапезе."},
+ icon:{n:"Иконописец",min:30,home:["studio"],d:"Пишет святые образа."},
+ arch:{n:"Архиепископ (Игумен)",min:100,home:["abbot","cath"],d:"Настоятель обители, высший чин."}
+};
+const B=[
+ {id:"cath",x:150,y:130,w:100,h:70,e:"⛪",n:"Вознесенский собор",d:"Главный храм обители. Здесь совершаются службы.",a:"Помолиться",l:"помолился в соборе"},
+ {id:"bell",x:290,y:90,w:80,h:60,e:"🔔",n:"Колокольня",d:"Колокольный звон созывает братию на молитву.",a:"Позвонить",l:"позвонил в колокола"},
+ {id:"lib",x:30,y:80,w:90,h:60,e:"📜",n:"Библиотека",d:"Рукописи и книги обители.",a:"Читать и переписывать",l:"трудился над книгами"},
+ {id:"ref",x:30,y:210,w:90,h:60,e:"🍞",n:"Трапезная",d:"Общая трапеза после службы.",a:"Потрудиться на кухне",l:"потрудился в трапезной"},
+ {id:"studio",x:280,y:210,w:90,h:60,e:"🎨",n:"Иконная мастерская",d:"Здесь пишут иконы.",a:"Писать икону",l:"писал икону"},
+ {id:"abbot",x:150,y:240,w:100,h:60,e:"🏛",n:"Настоятельский корпус",d:"Покои настоятеля и совет братии.",a:"Участвовать в совете",l:"участвовал в совете братии"},
+ {id:"garden",x:280,y:330,w:90,h:60,e:"🌳",n:"Сад и источник",d:"Тишина, вода и труд на земле.",a:"Работать в саду",l:"работал в саду"},
+ {id:"gate",x:150,y:350,w:100,h:50,e:"🚪",n:"Святые врата",d:"Вход в обитель. Выберите здание на карте, чтобы пойти туда.",a:null}
+];
+const bid=id=>B.find(b=>b.id===id)||B[7];
+let sb=null,me=null,all=[],ann="",busy=false,armed="";
+
+const mail=k=>"m"+[...new TextEncoder().encode(k)].map(x=>x.toString(16).padStart(2,"0")).join("")+"@"+DOMAIN;
+const PW=p=>p+"!obitel";
+const msg=t=>$("#err").textContent=t;
+const lg=(p,t)=>[t,...(Array.isArray(p.log)?p.log:[])].slice(0,8);
+function creds(){
+ let l=$("#l").value.trim(),p=$("#p").value,k=l.toLowerCase();
+ if(k==="admin"){k="админ";l="админ"}
+ if(k==="админ"&&p.toLowerCase()==="admin")p="админ";
+ return{l,k,p};
+}
+async function reg(){
+ const{l,k,p}=creds();
+ if(!/^\S{3,16}$/.test(l)||p.length<4)return msg("Логин 3–16 знаков без пробелов, пароль от 4.");
+ msg("Подождите…");
+ const{data,error}=await sb.auth.signUp({email:mail(k),password:PW(p)});
+ if(error)return msg(/registered|exists/i.test(error.message)?"Такой логин уже занят.":"Ошибка: "+error.message);
+ if(!data.session)return msg("В Supabase нужно отключить Confirm email (см. инструкцию).");
+ await boot(data.user,l,k);
+}
+async function login(){
+ const{l,k,p}=creds();
+ if(!l||!p)return msg("Введите логин и пароль.");
+ msg("Подождите…");
+ const{data,error}=await sb.auth.signInWithPassword({email:mail(k),password:PW(p)});
+ if(error)return msg("Неверный логин или пароль.");
+ await boot(data.user,l,k);
+}
+async function boot(user,l,k){
+ await loadAll();
+ me=all.find(x=>x.id===user.id);
+ if(!me&&l){
+  const{error}=await sb.from("profiles").insert({id:user.id,login:k,name:l,log:["Вы вошли в обитель послушником."]});
+  if(error)return msg("Ошибка: "+error.message);
+  await loadAll();me=all.find(x=>x.id===user.id);
+ }
+ if(!me)return leave("Профиль не найден. Войдите заново.");
+ msg("");$("#p").value="";
+ $("#auth").classList.add("hide");$("#game").classList.remove("hide");render();
+}
+async function leave(m){
+ try{await sb.auth.signOut()}catch(e){}
+ me=null;$("#game").classList.add("hide");$("#auth").classList.remove("hide");msg(m||"");
+}
+async function loadAll(){
+ const r=await sb.from("profiles").select("*").order("pts",{ascending:false});
+ all=r.data||[];
+ if(me){const m=all.find(x=>x.id===me.id);if(m)me=m}
+ const a=await sb.from("settings").select("v").eq("k","ann").maybeSingle();
+ ann=a.data?a.data.v:"";
+}
+async function upd(p,patch){
+ const{error}=await sb.from("profiles").update(patch).eq("id",p.id);
+ if(!error)Object.assign(p,patch);
+ return!error;
+}
+
+function draw(){
+ let s='<rect x="10" y="10" width="380" height="420" rx="14" fill="none" stroke="var(--wall)" stroke-width="3" stroke-dasharray="9 5"/><path d="M200 400V300M200 240V200M120 110h30M120 240h30M250 240h30M250 160h40" stroke="var(--wall)" stroke-width="2" opacity=".5" fill="none"/>';
+ for(const b of B)s+=`<g class="b${me.pos===b.id?" sel":""}" data-b="${b.id}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8"/><text x="${b.x+b.w/2}" y="${b.y+b.h/2}" font-size="24" text-anchor="middle">${b.e}</text><text x="${b.x+b.w/2}" y="${b.y+b.h-8}" font-size="10" text-anchor="middle">${b.n}</text></g>`;
+ for(const b of B){
+  const ps=all.filter(p=>p.pos===b.id).sort((a,c)=>(c.id===me.id)-(a.id===me.id)).slice(0,6);
+  ps.forEach((p,i)=>{
+   const cx=b.x+10+i*15,cy=b.y;
+   s+=`<g pointer-events="none"><circle cx="${cx}" cy="${cy}" r="7.5" style="fill:${p.id===me.id?"var(--accent)":"var(--wall)"}"/><text x="${cx}" y="${cy+3.5}" font-size="9" text-anchor="middle" style="fill:var(--on)">${esc((p.name[0]||"?").toUpperCase())}</text></g>`;
+  });
+ }
+ $("#map").innerHTML=s;
+}
+function render(){
+ if(!me)return;
+ const r=ROLES[me.role]||ROLES.novice;
+ $("#who").textContent=me.name;$("#rolen").textContent=r.n;$("#pts").textContent="· очков: "+me.pts;
+ draw();
+ const b=bid(me.pos),home=r.home.includes(b.id);
+ $("#panel").innerHTML=`<h2>${b.e} ${b.n}</h2><p style="margin:0 0 8px">${b.d}</p>`+(b.a?`<button id="act" ${busy?"disabled":""}>${b.a}</button> <span class="mut">+${home?3:1} оч.${home?" (ваше послушание)":""}</span>`:"");
+ const a=$("#act");if(a)a.onclick=act;
+ $("#roles").parentElement.classList.toggle("hide",!!me.is_admin);
+ $("#roles").innerHTML=Object.entries(ROLES).map(([k,x])=>{
+  const ok=me.pts>=x.min,cur=me.role===k;
+  return `<div class="role"><div><b>${x.n}</b><br><span class="mut">${x.d}</span></div>${cur?'<span class="pill">ваш чин</span>':ok?`<button data-r="${k}">Принять</button>`:`<span class="mut">нужно ${x.min} оч.</span>`}</div>`;
+ }).join("");
+ $("#roster").innerHTML=all.slice(0,30).map(p=>`<div class="role"><span>${esc(p.name)}${p.id===me.id?" (вы)":""}</span><span class="mut">${(ROLES[p.role]||ROLES.novice).n} · ${p.pts}</span></div>`).join("");
+ $("#log").innerHTML=(Array.isArray(me.log)?me.log:[]).map(t=>`<li>${esc(t)}</li>`).join("");
+ $("#ann").textContent=ann?"📣 "+ann:"";$("#ann").classList.toggle("hide",!ann);
+ $("#adm").classList.toggle("hide",!me.is_admin);
+ if(me.is_admin)admRender();
+}
+async function act(){
+ if(busy)return;
+ const b=bid(me.pos);if(!b.a)return;
+ const g=(ROLES[me.role]||ROLES.novice).home.includes(b.id)?3:1,old=me.pts,n=old+g;
+ let L=lg(me,`${me.name} ${b.l} (+${g})`);
+ for(const x of Object.values(ROLES))if(old<x.min&&n>=x.min)L=[`Вам доступно новое послушание: ${x.n}.`,...L].slice(0,8);
+ busy=true;render();
+ await upd(me,{pts:n,log:L});
+ render();setTimeout(()=>{busy=false;render()},1500);
+}
+function admRender(){
+ $("#ulist").innerHTML=all.map(p=>`<div class="u"><span><b>${esc(p.name)}</b> <span class="mut">· ${p.pts} оч.${p.is_admin?" · админ":""}</span></span>`+(p.is_admin?"":`<span class="row"><select data-k="${p.id}">${Object.entries(ROLES).map(([r,x])=>`<option value="${r}"${p.role===r?" selected":""}>${x.n}</option>`).join("")}</select><button class="ghost" data-a="pts" data-k="${p.id}">+10 оч.</button><button class="ghost" data-a="del" data-k="${p.id}">Сбросить</button></span>`)+"</div>").join("");
+}
+$("#map").addEventListener("click",async e=>{
+ const g=e.target.closest("[data-b]");if(!g||!me)return;
+ me.pos=g.dataset.b;render();await upd(me,{pos:me.pos});render();
+});
+$("#roles").addEventListener("click",async e=>{
+ const k=e.target.dataset.r;if(!k||!me||me.pts<ROLES[k].min)return;
+ const pos=ROLES[k].home[0]||me.pos;
+ await upd(me,{role:k,pos,log:lg(me,`${me.name} принял чин: ${ROLES[k].n}.`)});render();
+});
+$("#ulist").addEventListener("click",async e=>{
+ const a=e.target.dataset.a,t=all.find(x=>x.id===e.target.dataset.k),am=$("#admmsg");
+ if(!a||!t||!me.is_admin||t.is_admin)return;
+ am.textContent="";
+ if(a==="pts")await upd(t,{pts:t.pts+10});
+ else if(a==="del"){
+  if(armed!==t.id){armed=t.id;am.textContent="Нажмите «Сбросить» ещё раз: у «"+t.name+"» обнулятся очки и чин.";return}
+  armed="";await upd(t,{pts:0,role:"novice",pos:"gate",log:["Архиепископ начал ваш путь заново."]});
+ }
+ render();
+});
+$("#ulist").addEventListener("change",async e=>{
+ const t=all.find(x=>x.id===e.target.dataset.k);
+ if(!e.target.matches("select")||!t||!me.is_admin||t.is_admin)return;
+ await upd(t,{role:e.target.value,log:lg(t,"Архиепископ назначил вам чин: "+ROLES[e.target.value].n+".")});render();
+});
+$("#annb").onclick=async()=>{
+ if(!me||!me.is_admin)return;
+ const t=$("#annin").value.trim();
+ if(t)await sb.from("settings").upsert({k:"ann",v:t});else await sb.from("settings").delete().eq("k","ann");
+ $("#annin").value="";await loadAll();render();
+};
+$("#npb").onclick=async()=>{
+ const p=$("#npw").value,m=$("#npm");
+ if(p.length<4){m.textContent="От 4 знаков.";return}
+ const{error}=await sb.auth.updateUser({password:PW(p)});
+ m.textContent=error?"Ошибка: "+error.message:"Пароль изменён.";if(!error)$("#npw").value="";
+};
+$("#breg").onclick=()=>sb&&reg();$("#bin").onclick=()=>sb&&login();$("#out").onclick=()=>leave();
+$("#p").addEventListener("keydown",e=>{if(e.key==="Enter"&&sb)login()});
+
+if(SUPABASE_URL.startsWith("ВСТАВЬТЕ")||typeof supabase==="undefined"){
+ msg("Сайт ещё не подключён к Supabase: вставьте URL и ключ в начало скрипта.");
+}else{
+ sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ sb.auth.getSession().then(({data})=>{if(data.session)boot(data.session.user)});
+ setInterval(async()=>{
+  if(!me||busy)return;
+  const id=me.id;await loadAll();
+  if(!all.some(x=>x.id===id))leave("Профиль не найден. Войдите заново.");else render();
+ },15000);
+}
+</script>
+</body>
+</html>
