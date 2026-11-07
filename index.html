@@ -13,22 +13,27 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,"Time
 main{max-width:640px;margin:0 auto;padding:14px}
 h1{font-size:22px;margin:6px 0}h2{font-size:17px;margin:0 0 6px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
-input,select{width:100%;padding:11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
-select{width:auto;padding:6px;margin:0}
-button{font:inherit;padding:10px 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);cursor:pointer}
+input,select,textarea{width:100%;padding:11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+select{width:auto;padding:8px;margin:4px 0}
+textarea{min-height:150px;resize:vertical}
+button{font:inherit;padding:9px 13px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);cursor:pointer}
 button.ghost{background:transparent;color:var(--accent)}
-button:disabled{opacity:.45;cursor:default}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row input{flex:1;min-width:0;margin:0}.sp{justify-content:space-between}
 .mut{color:var(--mut);font-size:14px}.err{color:var(--accent);min-height:20px;font-size:14px}
 .pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--sel);font-size:14px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:#9a9a9a}.dot.on{background:#2fb344}
 svg{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--ground)}
 .b{cursor:pointer}.b rect{fill:var(--bld);stroke:var(--wall);stroke-width:1.5}
 .b.sel rect{fill:var(--sel);stroke:var(--accent);stroke-width:2.5}.b text{fill:var(--ink);font-family:Georgia,serif}
-.role,.u{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
-.role:first-of-type,.u:first-of-type{border-top:0}
-.u{flex-wrap:wrap}
-ul{padding-left:18px;margin:6px 0}
+.role{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.role:first-of-type{border-top:0}
+.u{padding:10px 0;border-top:1px solid var(--line)}.u:first-of-type{border-top:0}
+nav{display:flex;gap:6px;overflow-x:auto;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+nav button{white-space:nowrap}
+#chips{margin:10px 0}
+.cell{white-space:pre-wrap;margin:8px 0}
 .note{border-left:4px solid var(--accent);background:var(--sel)}
+#toast{position:fixed;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 8px);max-width:612px;margin:auto;z-index:20}
 .hide{display:none}
 </style>
 </head>
@@ -39,195 +44,287 @@ ul{padding-left:18px;margin:6px 0}
 
 <section id="auth" class="card">
   <h2>Вход в обитель</h2>
-  <input id="l" placeholder="Логин (3–16 знаков)" autocomplete="username" maxlength="16">
+  <input id="l" placeholder="Логин (3–16 знаков, без пробелов)" autocomplete="username" maxlength="16">
   <input id="p" type="password" placeholder="Пароль (от 4 знаков)" autocomplete="current-password" maxlength="64">
+  <p class="mut" style="margin:10px 0 0">Только при регистрации:</p>
+  <input id="n" placeholder="Имярек (имя, которое видно в игре)" maxlength="24">
+  <select id="g"><option value="m">Монах</option><option value="f">Монахиня</option></select>
   <div class="err" id="err"></div>
   <div class="row"><button id="bin">Войти</button><button id="breg" class="ghost">Зарегистрироваться</button></div>
-  <p class="mut">Каждый новый насельник начинает путь послушником.</p>
+  <p class="mut">Каждый новый насельник начинает путь послушником (послушницей).</p>
 </section>
 
 <section id="game" class="hide">
   <div class="card row sp">
-    <div><b id="who"></b><br><span class="pill" id="rolen"></span> <span class="mut" id="pts"></span></div>
+    <div><b id="who"></b><br><span class="pill" id="rolen"></span></div>
     <button class="ghost" id="out">Выйти</button>
   </div>
   <div class="card note hide" id="ann"></div>
-  <svg id="map" viewBox="0 0 400 440" role="img" aria-label="Карта монастыря"></svg>
-  <div class="card" id="panel"></div>
-  <div class="card"><h2>Послушания и чины</h2><div id="roles"></div></div>
-  <div class="card"><h2>Братия</h2><div id="roster"></div></div>
-  <div class="card"><h2>Летопись</h2><ul id="log"></ul></div>
-  <div class="card"><h2>Сменить пароль</h2>
-    <input id="npw" type="password" placeholder="Новый пароль (от 4 знаков)" maxlength="64" autocomplete="new-password">
-    <div class="row"><button class="ghost" id="npb">Сменить</button><span class="mut" id="npm"></span></div></div>
-  <div class="card hide" id="adm"><h2>🛡 Админ-панель архиепископа</h2>
-    <div class="row"><input id="annin" placeholder="Объявление для братии" maxlength="140" style="flex:1;min-width:0"><button id="annb">Опубликовать</button></div>
-    <div class="err" id="admmsg"></div>
-    <div id="ulist"></div>
+  <nav id="nav"></nav>
+  <div id="t-map">
+    <svg id="map" viewBox="0 0 400 440" role="img" aria-label="Карта монастыря"></svg>
+    <div class="row" id="chips"></div>
+    <div class="card" id="panel"></div>
   </div>
+  <div id="t-cells" class="hide"></div>
+  <div id="t-bro" class="hide"></div>
+  <div id="t-inbox" class="hide"></div>
+  <div id="t-adm" class="hide"></div>
+  <details class="card"><summary>Сменить пароль</summary>
+    <input id="npw" type="password" placeholder="Новый пароль (от 4 знаков)" maxlength="64" autocomplete="new-password">
+    <div class="row"><button class="ghost" id="npb">Сменить</button><span class="mut" id="npm"></span></div>
+  </details>
 </section>
 </main>
+<div id="toast" class="card note hide"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-// ====== НАСТРОЙКА: вставьте данные из Supabase (Project Settings → API) ======
 const SUPABASE_URL="https://gsszvglmnagacvipvrjg.supabase.co";
 const SUPABASE_KEY="sb_publishable_xTsVoOcMo5A_KpYIhFZ7fw_xul5uywa";
 const DOMAIN="gmail.com"; // служебный домен для скрытой почты; письма не отправляются
-// ============================================================================
 const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const ROLES={
- novice:{n:"Послушник",min:0,home:[],d:"Начало пути: молитва и труд."},
- lib:{n:"Библиотекарь",min:15,home:["lib"],d:"Хранит рукописи и книги."},
- bell:{n:"Звонарь",min:15,home:["bell"],d:"Созывает братию колокольным звоном."},
- cook:{n:"Трапезник",min:15,home:["ref"],d:"Заботится о братской трапезе."},
- icon:{n:"Иконописец",min:30,home:["studio"],d:"Пишет святые образа."},
- arch:{n:"Архиепископ (Игумен)",min:100,home:["abbot","cath"],d:"Настоятель обители, высший чин."}
-};
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Чины: [мужская форма, женская форма]. Раздаёт только архиепископ.
+const ROLES={novice:["Послушник","Послушница"],monk:["Монах","Монахиня"],lib:["Библиотекарь"],bell:["Звонарь"],cook:["Трапезник","Трапезница"],icon:["Иконописец"],regent:["Регент"],treas:["Казначей"],arch:["Архиепископ (Игумен)"]};
+const rn=p=>{const r=ROLES[p.role]||ROLES.novice;return(p.gender==="f"&&r[1])||r[0]};
 const B=[
- {id:"cath",x:150,y:130,w:100,h:70,e:"⛪",n:"Вознесенский собор",d:"Главный храм обители. Здесь совершаются службы.",a:"Помолиться",l:"помолился в соборе"},
- {id:"bell",x:290,y:90,w:80,h:60,e:"🔔",n:"Колокольня",d:"Колокольный звон созывает братию на молитву.",a:"Позвонить",l:"позвонил в колокола"},
- {id:"lib",x:30,y:80,w:90,h:60,e:"📜",n:"Библиотека",d:"Рукописи и книги обители.",a:"Читать и переписывать",l:"трудился над книгами"},
- {id:"ref",x:30,y:210,w:90,h:60,e:"🍞",n:"Трапезная",d:"Общая трапеза после службы.",a:"Потрудиться на кухне",l:"потрудился в трапезной"},
- {id:"studio",x:280,y:210,w:90,h:60,e:"🎨",n:"Иконная мастерская",d:"Здесь пишут иконы.",a:"Писать икону",l:"писал икону"},
- {id:"abbot",x:150,y:240,w:100,h:60,e:"🏛",n:"Настоятельский корпус",d:"Покои настоятеля и совет братии.",a:"Участвовать в совете",l:"участвовал в совете братии"},
- {id:"garden",x:280,y:330,w:90,h:60,e:"🌳",n:"Сад и источник",d:"Тишина, вода и труд на земле.",a:"Работать в саду",l:"работал в саду"},
- {id:"gate",x:150,y:350,w:100,h:50,e:"🚪",n:"Святые врата",d:"Вход в обитель. Выберите здание на карте, чтобы пойти туда.",a:null}
+ {id:"cath",x:150,y:130,w:100,h:70,e:"⛪",s:"Собор",n:"Вознесенский собор",d:"Главный храм обители. Здесь совершаются службы."},
+ {id:"bell",x:290,y:90,w:80,h:60,e:"🔔",s:"Колокольня",n:"Колокольня",d:"Колокольный звон созывает братию на молитву."},
+ {id:"lib",x:30,y:80,w:90,h:60,e:"📜",s:"Библиотека",n:"Библиотека",d:"Рукописи и книги обители."},
+ {id:"ref",x:30,y:210,w:90,h:60,e:"🍞",s:"Трапезная",n:"Трапезная",d:"Общая трапеза после службы."},
+ {id:"cells",x:30,y:330,w:90,h:60,e:"🏠",s:"Кельи",n:"Кельи",d:"Братский корпус: у каждого насельника своя келья."},
+ {id:"studio",x:280,y:210,w:90,h:60,e:"🎨",s:"Мастерская",n:"Иконная мастерская",d:"Здесь пишут иконы."},
+ {id:"abbot",x:150,y:240,w:100,h:60,e:"🏛",s:"Настоятельская",n:"Настоятельский корпус",d:"Покои настоятеля и совет братии."},
+ {id:"garden",x:280,y:330,w:90,h:60,e:"🌳",s:"Сад",n:"Сад и источник",d:"Тишина, вода и труд на земле."},
+ {id:"gate",x:150,y:350,w:100,h:50,e:"🚪",s:"Врата",n:"Святые врата",d:"Вход в обитель. Выберите место на карте или в списке ниже."}
 ];
-const bid=id=>B.find(b=>b.id===id)||B[7];
-let sb=null,me=null,all=[],ann="",busy=false,armed="";
+const bid=id=>B.find(b=>b.id===id)||B[8];
+const TABS=[["map","🗺 Карта"],["cells","🏠 Кельи"],["bro","👥 Братия"],["inbox","✉ Письма"],["adm","🛡 Админ"]];
+let sb=null,me=null,all=[],ann="",notes=[],seen=0,tab="map",viewId=null,lastCall={},timers=[];
 
 const mail=k=>"m"+[...new TextEncoder().encode(k)].map(x=>x.toString(16).padStart(2,"0")).join("")+"@"+DOMAIN;
 const PW=p=>p+"!obitel";
 const msg=t=>$("#err").textContent=t;
-const lg=(p,t)=>[t,...(Array.isArray(p.log)?p.log:[])].slice(0,8);
+const dot=p=>`<span class="dot${p.online?" on":""}"></span>`;
+const nm=id=>{const p=all.find(x=>x.id===id);return p?p.name:"Кто-то"};
+const ntext=n=>n.kind==="call"?`🔔 ${nm(n.from_id)} ждёт вас в вашей келье`:n.kind==="task"?`📜 Вам назначено послушание: ${n.body}`:`✉ ${nm(n.from_id)}: ${n.body}`;
+const sorted=()=>[...all].sort((a,b)=>(b.is_admin-a.is_admin)||(b.online-a.online)||a.name.localeCompare(b.name,"ru"));
+const fmt=t=>new Date(t).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+
 function creds(){
  let l=$("#l").value.trim(),p=$("#p").value,k=l.toLowerCase();
  if(k==="admin"){k="админ";l="админ"}
  if(k==="админ"&&p.toLowerCase()==="admin")p="админ";
- return{l,k,p};
+ return{l,k,p,n:$("#n").value.trim(),g:$("#g").value};
 }
 async function reg(){
- const{l,k,p}=creds();
+ const{l,k,p,n,g}=creds();
  if(!/^\S{3,16}$/.test(l)||p.length<4)return msg("Логин 3–16 знаков без пробелов, пароль от 4.");
+ if(n.length<2)return msg("Впишите Имярек: имя, которое будет видно в игре.");
  msg("Подождите…");
  const{data,error}=await sb.auth.signUp({email:mail(k),password:PW(p)});
  if(error)return msg(/registered|exists/i.test(error.message)?"Такой логин уже занят.":"Ошибка: "+error.message);
- if(!data.session)return msg("В Supabase нужно отключить Confirm email (см. инструкцию).");
- await boot(data.user,l,k);
+ if(!data.session)return msg("В Supabase нужно отключить Confirm email.");
+ await boot(data.user,{k,n,g});
 }
 async function login(){
- const{l,k,p}=creds();
+ const{l,k,p,n,g}=creds();
  if(!l||!p)return msg("Введите логин и пароль.");
  msg("Подождите…");
  const{data,error}=await sb.auth.signInWithPassword({email:mail(k),password:PW(p)});
  if(error)return msg("Неверный логин или пароль.");
- await boot(data.user,l,k);
+ await boot(data.user,{k,n:n||l,g});
 }
-async function boot(user,l,k){
+async function boot(user,c){
  await loadAll();
  me=all.find(x=>x.id===user.id);
- if(!me&&l){
-  const{error}=await sb.from("profiles").insert({id:user.id,login:k,name:l,log:["Вы вошли в обитель послушником."]});
+ if(!me&&c){
+  const{error}=await sb.from("profiles").insert({id:user.id,login:c.k,name:c.n,gender:c.g});
   if(error)return msg("Ошибка: "+error.message);
   await loadAll();me=all.find(x=>x.id===user.id);
  }
  if(!me)return leave("Профиль не найден. Войдите заново.");
+ await sb.rpc("touch");
+ await loadNotes(false);
  msg("");$("#p").value="";
- $("#auth").classList.add("hide");$("#game").classList.remove("hide");render();
+ $("#auth").classList.add("hide");$("#game").classList.remove("hide");
+ setTab("map");
+ const un=notes.filter(n=>!n.read).length;if(un)toast("Непрочитанных писем: "+un);
+ timers.forEach(clearInterval);
+ timers=[setInterval(tick,10000),setInterval(()=>sb.rpc("touch"),60000)];
 }
 async function leave(m){
+ timers.forEach(clearInterval);timers=[];
  try{await sb.auth.signOut()}catch(e){}
  me=null;$("#game").classList.add("hide");$("#auth").classList.remove("hide");msg(m||"");
 }
 async function loadAll(){
- const r=await sb.from("profiles").select("*").order("pts",{ascending:false});
+ const r=await sb.from("roster").select("*");
  all=r.data||[];
+ const pr=await sb.from("profiles").select("id,task,task_done");
+ const tm={};(pr.data||[]).forEach(x=>tm[x.id]=x);
+ all.forEach(p=>Object.assign(p,tm[p.id]||{task:"",task_done:false}));
  if(me){const m=all.find(x=>x.id===me.id);if(m)me=m}
  const a=await sb.from("settings").select("v").eq("k","ann").maybeSingle();
  ann=a.data?a.data.v:"";
+}
+async function loadNotes(notify){
+ const r=await sb.from("notes").select("*").eq("to_id",me.id).order("id",{ascending:false}).limit(30);
+ notes=r.data||[];
+ const fresh=notes.filter(n=>n.id>seen&&!n.read);
+ if(notify&&fresh.length){
+  const t=ntext(fresh[0]);toast(t);
+  if("Notification"in window&&Notification.permission==="granted")try{new Notification("Онлайн-монастырь",{body:t})}catch(e){}
+ }
+ seen=Math.max(seen,0,...notes.map(n=>n.id));
+}
+async function tick(){
+ if(!me)return;
+ const id=me.id;await loadAll();
+ if(!all.some(x=>x.id===id))return leave("Профиль не найден. Войдите заново.");
+ await loadNotes(true);render(true);
 }
 async function upd(p,patch){
  const{error}=await sb.from("profiles").update(patch).eq("id",p.id);
  if(!error)Object.assign(p,patch);
  return!error;
 }
+function toast(t){
+ const el=$("#toast");el.innerHTML=esc(t)+' <button id="tb">Открыть</button>';el.classList.remove("hide");
+ clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.add("hide"),9000);
+}
+$("#toast").addEventListener("click",e=>{if(e.target.id==="tb"){$("#toast").classList.add("hide");setTab("inbox")}});
 
-function draw(){
- let s='<rect x="10" y="10" width="380" height="420" rx="14" fill="none" stroke="var(--wall)" stroke-width="3" stroke-dasharray="9 5"/><path d="M200 400V300M200 240V200M120 110h30M120 240h30M250 240h30M250 160h40" stroke="var(--wall)" stroke-width="2" opacity=".5" fill="none"/>';
+function setTab(k){
+ tab=k;if(k!=="cells")viewId=null;
+ for(const[t]of TABS)$("#t-"+t).classList.toggle("hide",t!==k);
+ render();window.scrollTo(0,0);
+}
+$("#nav").addEventListener("click",e=>{const k=e.target.dataset.t;if(k)setTab(k)});
+
+function render(soft){
+ if(!me)return;
+ $("#who").textContent=me.name;$("#rolen").textContent=rn(me);
+ $("#ann").textContent=ann?"📣 "+ann:"";$("#ann").classList.toggle("hide",!ann);
+ const un=notes.filter(n=>!n.read).length;
+ $("#nav").innerHTML=TABS.filter(t=>t[0]!=="adm"||me.is_admin).map(([k,n])=>`<button data-t="${k}" class="${tab===k?"":"ghost"}">${n}${k==="inbox"&&un?" ("+un+")":""}</button>`).join("");
+ if(tab==="map")rMap();
+ if(tab==="cells"&&!(soft&&viewId===me.id))rCells();
+ if(tab==="bro")rBro();
+ if(tab==="inbox")rInbox();
+ if(tab==="adm"&&!soft)rAdm();
+}
+
+// ---------- Карта ----------
+function rMap(){
+ let s='<rect x="10" y="10" width="380" height="420" rx="14" fill="none" stroke="var(--wall)" stroke-width="3" stroke-dasharray="9 5"/><path d="M200 400V300M200 240V200M120 110h30M120 240h30M250 240h30M250 160h40M120 360h30" stroke="var(--wall)" stroke-width="2" opacity=".5" fill="none"/>';
  for(const b of B)s+=`<g class="b${me.pos===b.id?" sel":""}" data-b="${b.id}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8"/><text x="${b.x+b.w/2}" y="${b.y+b.h/2}" font-size="24" text-anchor="middle">${b.e}</text><text x="${b.x+b.w/2}" y="${b.y+b.h-8}" font-size="10" text-anchor="middle">${b.n}</text></g>`;
  for(const b of B){
-  const ps=all.filter(p=>p.pos===b.id).sort((a,c)=>(c.id===me.id)-(a.id===me.id)).slice(0,6);
-  ps.forEach((p,i)=>{
-   const cx=b.x+10+i*15,cy=b.y;
-   s+=`<g pointer-events="none"><circle cx="${cx}" cy="${cy}" r="7.5" style="fill:${p.id===me.id?"var(--accent)":"var(--wall)"}"/><text x="${cx}" y="${cy+3.5}" font-size="9" text-anchor="middle" style="fill:var(--on)">${esc((p.name[0]||"?").toUpperCase())}</text></g>`;
+  all.filter(p=>p.pos===b.id&&(p.online||p.id===me.id)).sort((a,c)=>(c.id===me.id)-(a.id===me.id)).slice(0,6).forEach((p,i)=>{
+   const cx=b.x+10+i*15;
+   s+=`<g pointer-events="none"><circle cx="${cx}" cy="${b.y}" r="7.5" style="fill:${p.id===me.id?"var(--accent)":"var(--wall)"}"/><text x="${cx}" y="${b.y+3.5}" font-size="9" text-anchor="middle" style="fill:var(--on)">${esc((p.name[0]||"?").toUpperCase())}</text></g>`;
   });
  }
  $("#map").innerHTML=s;
+ $("#chips").innerHTML=B.map(b=>`<button data-b="${b.id}" class="${me.pos===b.id?"":"ghost"}">${b.e} ${b.s}</button>`).join("");
+ const b=bid(me.pos),here=all.filter(p=>p.online&&p.pos===b.id&&p.id!==me.id);
+ $("#panel").innerHTML=`<h2>${b.e} ${b.n}</h2><p style="margin:0 0 8px">${b.d}</p>`+(b.id==="cells"?'<button data-go="cells">Открыть кельи</button> <button class="ghost" data-go="mycell">Моя келья</button>':"")+(b.id==="abbot"&&me.is_admin?'<button data-go="adm">Админ-панель</button>':"")+(here.length?`<p class="mut" style="margin:8px 0 0">Сейчас здесь: ${here.map(p=>esc(p.name)).join(", ")}</p>`:"");
 }
-function render(){
- if(!me)return;
- const r=ROLES[me.role]||ROLES.novice;
- $("#who").textContent=me.name;$("#rolen").textContent=r.n;$("#pts").textContent="· очков: "+me.pts;
- draw();
- const b=bid(me.pos),home=r.home.includes(b.id);
- $("#panel").innerHTML=`<h2>${b.e} ${b.n}</h2><p style="margin:0 0 8px">${b.d}</p>`+(b.a?`<button id="act" ${busy?"disabled":""}>${b.a}</button> <span class="mut">+${home?3:1} оч.${home?" (ваше послушание)":""}</span>`:"");
- const a=$("#act");if(a)a.onclick=act;
- $("#roles").parentElement.classList.toggle("hide",!!me.is_admin);
- $("#roles").innerHTML=Object.entries(ROLES).map(([k,x])=>{
-  const ok=me.pts>=x.min,cur=me.role===k;
-  return `<div class="role"><div><b>${x.n}</b><br><span class="mut">${x.d}</span></div>${cur?'<span class="pill">ваш чин</span>':ok?`<button data-r="${k}">Принять</button>`:`<span class="mut">нужно ${x.min} оч.</span>`}</div>`;
- }).join("");
- $("#roster").innerHTML=all.slice(0,30).map(p=>`<div class="role"><span>${esc(p.name)}${p.id===me.id?" (вы)":""}</span><span class="mut">${(ROLES[p.role]||ROLES.novice).n} · ${p.pts}</span></div>`).join("");
- $("#log").innerHTML=(Array.isArray(me.log)?me.log:[]).map(t=>`<li>${esc(t)}</li>`).join("");
- $("#ann").textContent=ann?"📣 "+ann:"";$("#ann").classList.toggle("hide",!ann);
- $("#adm").classList.toggle("hide",!me.is_admin);
- if(me.is_admin)admRender();
-}
-async function act(){
- if(busy)return;
- const b=bid(me.pos);if(!b.a)return;
- const g=(ROLES[me.role]||ROLES.novice).home.includes(b.id)?3:1,old=me.pts,n=old+g;
- let L=lg(me,`${me.name} ${b.l} (+${g})`);
- for(const x of Object.values(ROLES))if(old<x.min&&n>=x.min)L=[`Вам доступно новое послушание: ${x.n}.`,...L].slice(0,8);
- busy=true;render();
- await upd(me,{pts:n,log:L});
- render();setTimeout(()=>{busy=false;render()},1500);
-}
-function admRender(){
- $("#ulist").innerHTML=all.map(p=>`<div class="u"><span><b>${esc(p.name)}</b> <span class="mut">· ${p.pts} оч.${p.is_admin?" · админ":""}</span></span>`+(p.is_admin?"":`<span class="row"><select data-k="${p.id}">${Object.entries(ROLES).map(([r,x])=>`<option value="${r}"${p.role===r?" selected":""}>${x.n}</option>`).join("")}</select><button class="ghost" data-a="pts" data-k="${p.id}">+10 оч.</button><button class="ghost" data-a="del" data-k="${p.id}">Сбросить</button></span>`)+"</div>").join("");
-}
-$("#map").addEventListener("click",async e=>{
- const g=e.target.closest("[data-b]");if(!g||!me)return;
- me.pos=g.dataset.b;render();await upd(me,{pos:me.pos});render();
+$("#t-map").addEventListener("click",e=>{
+ const g=e.target.closest("[data-b]"),o=e.target.dataset.go;
+ if(g){me.pos=g.dataset.b;rMap();upd(me,{pos:me.pos})}
+ else if(o==="mycell"){setTab("cells");viewId=me.id;rCells()}
+ else if(o)setTab(o);
 });
-$("#roles").addEventListener("click",async e=>{
- const k=e.target.dataset.r;if(!k||!me||me.pts<ROLES[k].min)return;
- const pos=ROLES[k].home[0]||me.pos;
- await upd(me,{role:k,pos,log:lg(me,`${me.name} принял чин: ${ROLES[k].n}.`)});render();
-});
-$("#ulist").addEventListener("click",async e=>{
- const a=e.target.dataset.a,t=all.find(x=>x.id===e.target.dataset.k),am=$("#admmsg");
- if(!a||!t||!me.is_admin||t.is_admin)return;
- am.textContent="";
- if(a==="pts")await upd(t,{pts:t.pts+10});
- else if(a==="del"){
-  if(armed!==t.id){armed=t.id;am.textContent="Нажмите «Сбросить» ещё раз: у «"+t.name+"» обнулятся очки и чин.";return}
-  armed="";await upd(t,{pts:0,role:"novice",pos:"gate",log:["Архиепископ начал ваш путь заново."]});
+
+// ---------- Кельи ----------
+function rCells(){
+ const el=$("#t-cells"),p=viewId&&all.find(x=>x.id===viewId);
+ if(p){
+  const own=p.id===me.id;
+  el.innerHTML=`<button class="ghost" id="cb">← Все кельи</button><div class="card"><h2>🏠 Келья: ${esc(p.name)} ${dot(p)}</h2><div class="mut">${esc(rn(p))}</div>`+(own?`<textarea id="ct" maxlength="2000" placeholder="Напишите что-нибудь для тех, кто зайдёт в вашу келью…">${esc(p.cell_text)}</textarea><div class="row"><button id="cs">Сохранить</button><span class="mut" id="cm"></span></div>`:`<div class="cell">${esc(p.cell_text||"В келье пока пусто.")}</div><button id="call">🔔 Позвать: ${esc(p.name)}</button><div class="mut" id="cm" style="margin-top:6px"></div>`)+"</div>";
+ }else{
+  viewId=null;
+  el.innerHTML=`<div class="card"><button id="mine">Моя келья</button></div><div class="card"><h2>Кельи обители</h2>`+sorted().map(x=>`<div class="role"><span>${dot(x)}${esc(x.name)} <span class="mut">· ${esc(rn(x))}</span></span><button class="ghost" data-c="${x.id}">Войти</button></div>`).join("")+"</div>";
  }
- render();
+}
+$("#t-cells").addEventListener("click",async e=>{
+ const t=e.target;
+ if(t.dataset.c){viewId=t.dataset.c;return rCells()}
+ if(t.id==="mine"){viewId=me.id;return rCells()}
+ if(t.id==="cb"){viewId=null;return rCells()}
+ if(t.id==="cs"){const ok=await upd(me,{cell_text:$("#ct").value});$("#cm").textContent=ok?"Сохранено.":"Не удалось сохранить."}
+ if(t.id==="call"){
+  const now=Date.now(),cm=$("#cm");
+  if(now-(lastCall[viewId]||0)<30000){cm.textContent="Вы только что звали. Подождите немного.";return}
+  const{error}=await sb.from("notes").insert({to_id:viewId,from_id:me.id,kind:"call",body:""});
+  if(!error)lastCall[viewId]=now;
+  cm.textContent=error?"Не удалось позвать.":"Вы позвали насельника, ему придёт уведомление.";
+ }
 });
-$("#ulist").addEventListener("change",async e=>{
- const t=all.find(x=>x.id===e.target.dataset.k);
- if(!e.target.matches("select")||!t||!me.is_admin||t.is_admin)return;
- await upd(t,{role:e.target.value,log:lg(t,"Архиепископ назначил вам чин: "+ROLES[e.target.value].n+".")});render();
+
+// ---------- Братия ----------
+function rBro(){
+ const on=all.filter(p=>p.online).length;
+ $("#t-bro").innerHTML=`<div class="card"><h2>Братия и сёстры обители</h2><div class="mut">Сейчас в обители: ${on} из ${all.length}</div>`+sorted().map(p=>`<div class="role"><span>${dot(p)}${esc(p.name)}${p.id===me.id?" (вы)":""}</span><span class="mut">${esc(rn(p))}</span></div>`).join("")+"</div>";
+}
+
+// ---------- Письма ----------
+function rInbox(){
+ const canN="Notification"in window&&Notification.permission==="default";
+ $("#t-inbox").innerHTML=(me.task?`<div class="card"><h2>📜 Моё послушание</h2><div class="cell">${esc(me.task)}</div><button id="td">${me.task_done?"Вернуть в работу":"Выполнено ✓"}</button> ${me.task_done?'<span class="mut">отмечено выполненным</span>':""}</div>`:"")
+ +`<div class="card"><h2>Письма и уведомления</h2>`+(canN?'<button class="ghost" id="nb">Включить уведомления браузера</button>':"")
+ +(notes.some(n=>!n.read)?' <button class="ghost" id="ra">Прочитать все</button>':"")
+ +(notes.length?notes.map(n=>`<div class="role" style="${n.read?"opacity:.6":""}"><span>${esc(ntext(n))}<br><span class="mut">${fmt(n.created_at)}</span></span>${n.read?"":`<button class="ghost" data-n="${n.id}">Прочитано</button>`}</div>`).join(""):'<p class="mut">Писем пока нет.</p>')+"</div>";
+}
+$("#t-inbox").addEventListener("click",async e=>{
+ const t=e.target;
+ if(t.id==="td")await upd(me,{task_done:!me.task_done});
+ else if(t.id==="nb")await Notification.requestPermission();
+ else if(t.id==="ra")await sb.from("notes").update({read:true}).eq("to_id",me.id).eq("read",false);
+ else if(t.dataset.n)await sb.from("notes").update({read:true}).eq("id",t.dataset.n);
+ else return;
+ await loadNotes(false);render();
 });
-$("#annb").onclick=async()=>{
- if(!me||!me.is_admin)return;
- const t=$("#annin").value.trim();
- if(t)await sb.from("settings").upsert({k:"ann",v:t});else await sb.from("settings").delete().eq("k","ann");
- $("#annin").value="";await loadAll();render();
-};
+
+// ---------- Админ-панель ----------
+function rAdm(){
+ $("#t-adm").innerHTML=`<div class="card"><h2>🛡 Админ-панель архиепископа</h2>
+ <div class="row"><input id="annin" placeholder="Объявление для братии" maxlength="140"><button id="annb">Опубликовать</button></div>
+ <div class="err" id="admmsg"></div></div><div class="card"><h2>Зарегистрированные</h2>`
+ +sorted().map(p=>`<div class="u"><div>${dot(p)}<b>${esc(p.name)}</b> <span class="mut">· @${esc(p.login)} · ${esc(rn(p))}${p.task?(p.task_done?" · послушание выполнено ✓":" · есть послушание"):""}</span></div>`
+ +(p.is_admin?"":`<div><select data-k="${p.id}">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}"${p.role===k?" selected":""}>${r.join(" / ")}</option>`).join("")}</select></div>
+ <div class="row"><input data-t placeholder="Послушание" value="${esc(p.task)}" maxlength="300"><button data-a="task" data-k="${p.id}">Назначить</button></div>
+ <div class="row" style="margin-top:6px"><input placeholder="Личное сообщение" maxlength="500"><button class="ghost" data-a="msg" data-k="${p.id}">Отправить</button></div>`)+"</div>").join("")+"</div>";
+}
+$("#t-adm").addEventListener("click",async e=>{
+ const t=e.target,am=()=>$("#admmsg");
+ if(!me.is_admin)return;
+ if(t.id==="annb"){
+  const v=$("#annin").value.trim();
+  if(v)await sb.from("settings").upsert({k:"ann",v});else await sb.from("settings").delete().eq("k","ann");
+  await loadAll();return render();
+ }
+ const a=t.dataset.a,k=t.dataset.k;if(!a||!k)return;
+ const v=t.parentElement.querySelector("input").value.trim();let error=null;
+ if(a==="task"){
+  ({error}=await sb.rpc("admin_set_task",{target:k,new_task:v}));
+  if(!error&&v)await sb.from("notes").insert({to_id:k,from_id:me.id,kind:"task",body:v});
+ }else{
+  if(!v)return;
+  ({error}=await sb.from("notes").insert({to_id:k,from_id:me.id,kind:"msg",body:v}));
+ }
+ await loadAll();rAdm();
+ am().textContent=error?"Ошибка: "+error.message:(a==="task"?"Послушание назначено.":"Сообщение отправлено.");
+});
+$("#t-adm").addEventListener("change",async e=>{
+ const k=e.target.dataset.k;if(!e.target.matches("select")||!k||!me.is_admin)return;
+ const r=e.target.value,{error}=await sb.rpc("admin_set_role",{target:k,new_role:r});
+ if(!error)await sb.from("notes").insert({to_id:k,from_id:me.id,kind:"msg",body:"Архиепископ даровал вам чин: "+ROLES[r].join(" / ")});
+ await loadAll();rAdm();
+ $("#admmsg").textContent=error?"Ошибка: "+error.message:"Чин присвоен.";
+});
+
 $("#npb").onclick=async()=>{
  const p=$("#npw").value,m=$("#npm");
  if(p.length<4){m.textContent="От 4 знаков.";return}
@@ -237,16 +334,10 @@ $("#npb").onclick=async()=>{
 $("#breg").onclick=()=>sb&&reg();$("#bin").onclick=()=>sb&&login();$("#out").onclick=()=>leave();
 $("#p").addEventListener("keydown",e=>{if(e.key==="Enter"&&sb)login()});
 
-if(SUPABASE_URL.startsWith("ВСТАВЬТЕ")||typeof supabase==="undefined"){
- msg("Сайт ещё не подключён к Supabase: вставьте URL и ключ в начало скрипта.");
-}else{
+if(typeof supabase==="undefined"){msg("Не удалось загрузить библиотеку Supabase. Проверьте интернет.")}
+else{
  sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
  sb.auth.getSession().then(({data})=>{if(data.session)boot(data.session.user)});
- setInterval(async()=>{
-  if(!me||busy)return;
-  const id=me.id;await loadAll();
-  if(!all.some(x=>x.id===id))leave("Профиль не найден. Войдите заново.");else render();
- },15000);
 }
 </script>
 </body>
