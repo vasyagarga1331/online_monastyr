@@ -4,66 +4,95 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Онлайн-монастырь · Ново-Нямецкий</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Philosopher:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4eddf;--ink:#2b2118;--card:#fffaf0;--line:#cdbb98;--accent:#7a2e2e;--on:#fff;--wall:#8a7455;--ground:#e4dac0;--bld:#f3e7cc;--sel:#e9c98a;--mut:#6b5b48;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1611;--ink:#efe6d4;--card:#262018;--line:#4a3f30;--accent:#d98a7a;--on:#1b1611;--wall:#7c6a4f;--ground:#2a2319;--bld:#3a3022;--sel:#6b5430;--mut:#b5a58c;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1b1611;--ink:#efe6d4;--card:#262018;--line:#4a3f30;--accent:#d98a7a;--on:#1b1611;--wall:#7c6a4f;--ground:#2a2319;--bld:#3a3022;--sel:#6b5430;--mut:#b5a58c;color-scheme:dark}
+:root{--bg:#EEF1F5;--paper:#fff;--ink:#1F2433;--mut:#5F6678;--line:#D5DBE6;--blue:#27438F;--gold:#B98A1F;--goldsoft:#F6E7B8;--red:#B53A2C;--lawn:#DCE7D6;--path:#EADFC4;--bld:#FBF6E9;--wall:#9C8660;--on:#fff;--accent:var(--blue);--card:var(--paper);--sel:var(--goldsoft);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1524;--paper:#182034;--ink:#E8ECF6;--mut:#9AA3BA;--line:#2A3452;--blue:#8FA8F0;--gold:#E0B44A;--goldsoft:#4A3C16;--red:#E58270;--lawn:#17261F;--path:#3A3A2C;--bld:#26304B;--wall:#7C8CB0;--on:#0F1524;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1524;--paper:#182034;--ink:#E8ECF6;--mut:#9AA3BA;--line:#2A3452;--blue:#8FA8F0;--gold:#E0B44A;--goldsoft:#4A3C16;--red:#E58270;--lawn:#17261F;--path:#3A3A2C;--bld:#26304B;--wall:#7C8CB0;--on:#0F1524;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Georgia,"Times New Roman",serif;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
-main{max-width:640px;margin:0 auto;padding:14px}
-h1{font-size:22px;margin:6px 0}h2{font-size:17px;margin:0 0 6px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
-input,select,textarea{width:100%;padding:11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
-select{width:auto;padding:8px;margin:4px 0}
-textarea{min-height:150px;resize:vertical}
-button{font:inherit;padding:9px 13px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--on);cursor:pointer}
-button.ghost{background:transparent;color:var(--accent)}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row input{flex:1;min-width:0;margin:0}.sp{justify-content:space-between}
-.mut{color:var(--mut);font-size:14px}.err{color:var(--accent);min-height:20px;font-size:14px}
-.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:var(--sel);font-size:14px}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:#9a9a9a}.dot.on{background:#2fb344}
-svg{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--ground)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;padding:env(safe-area-inset-top,0px) 0 calc(88px + env(safe-area-inset-bottom,0px))}
+main{max-width:620px;margin:0 auto;padding:16px 14px}
+h1,h2,.hi{font-family:Philosopher,Georgia,"Times New Roman",serif;font-weight:700;margin:0}
+h1{font-size:30px;line-height:1.15}h2{font-size:20px;margin-bottom:8px}.hi{font-size:22px;line-height:1.2;margin-bottom:4px}
+.hero{text-align:center;padding:24px 8px 12px}.mark{font-size:46px;line-height:1;color:var(--gold)}
+.hero p{color:var(--mut);margin:8px auto 0;max-width:34ch}
+.panel{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:20px;padding:18px;margin:14px 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.note{background:var(--goldsoft);border:1px solid var(--gold)}
+label,.lbl{display:block;font-weight:700;font-size:14px}
+input,textarea{width:100%;padding:12px 14px;margin:6px 0 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-weight:400}
+textarea{min-height:160px;resize:vertical}
+select{padding:9px 12px;margin:4px 0;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,textarea:focus,select:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button{font:inherit;font-weight:700;padding:10px 16px;border-radius:999px;border:1.5px solid var(--blue);background:var(--blue);color:var(--on);cursor:pointer;transition:transform .08s}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;color:var(--blue)}
+button.big{width:100%;padding:14px;font-size:17px}
+button.sm{padding:6px 14px;font-size:14px}
+.seg{display:flex;gap:4px;background:var(--bg);border-radius:999px;padding:4px;margin:6px 0 14px}
+.seg button{flex:1;background:transparent;color:var(--mut);border:0}
+.seg button.on{background:var(--paper);color:var(--blue);box-shadow:0 1px 3px rgba(20,30,60,.2)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row input{flex:1;min-width:0;margin:0}
+.mut{color:var(--mut);font-size:14px}.hint{text-align:center;margin:12px 0 0}
+.err{color:var(--red);min-height:22px;font-size:14px;font-weight:600}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.pill{display:inline-block;padding:2px 12px;border-radius:99px;background:var(--goldsoft);font-size:14px;font-weight:600}
+.ann{background:var(--goldsoft);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;margin:10px 0}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px;background:#9AA0AD}
+.dot.on{background:#2FA05A;box-shadow:0 0 0 3px rgba(47,160,90,.25)}
+svg{width:100%;height:auto;display:block;border-radius:18px;border:2px solid var(--gold);background:var(--lawn)}
 .b{cursor:pointer}.b rect{fill:var(--bld);stroke:var(--wall);stroke-width:1.5}
-.b.sel rect{fill:var(--sel);stroke:var(--accent);stroke-width:2.5}.b text{fill:var(--ink);font-family:Georgia,serif}
-.role{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.b.sel rect{fill:var(--goldsoft);stroke:var(--gold);stroke-width:3}.b text{fill:var(--ink);font-family:Nunito,sans-serif;font-weight:700}
+#chips{display:flex;gap:8px;overflow-x:auto;margin:12px -14px;padding:2px 14px 6px}
+#chips button{white-space:nowrap;padding:8px 14px}
+.role{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .role:first-of-type{border-top:0}
-.u{padding:10px 0;border-top:1px solid var(--line)}.u:first-of-type{border-top:0}
-nav{display:flex;gap:6px;overflow-x:auto;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
-nav button{white-space:nowrap}
-#chips{margin:10px 0}
-.cell{white-space:pre-wrap;margin:8px 0}
-.note{border-left:4px solid var(--accent);background:var(--sel)}
-#toast{position:fixed;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 8px);max-width:612px;margin:auto;z-index:20}
-.hide{display:none}
+.u{padding:12px 0;border-top:1px solid var(--line)}.u:first-of-type{border-top:0}
+.cell{white-space:pre-wrap;margin:10px 0;padding:12px 14px;background:var(--bg);border-radius:12px;border-left:3px solid var(--gold)}
+summary{cursor:pointer;font-weight:700}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;gap:2px;background:var(--paper);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));z-index:10}
+nav button{flex:1;max-width:112px;background:none;border:0;color:var(--mut);display:flex;flex-direction:column;align-items:center;font-size:12px;padding:4px 2px;border-radius:14px;position:relative}
+nav button.on{color:var(--blue);background:var(--goldsoft)}
+nav .ic{font-size:22px;line-height:1.25}
+nav .bd{position:absolute;top:0;right:14%;background:var(--red);color:#fff;font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px}
+#toast{position:fixed;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:592px;margin:auto;z-index:30;box-shadow:0 8px 24px rgba(10,20,50,.28)}
+.hide{display:none!important}
+@media (prefers-reduced-motion:reduce){button{transition:none}}
 </style>
 </head>
 <body>
 <main>
-<h1>⛪ Онлайн-монастырь</h1>
-<p class="mut" style="margin-top:0">Схематичная карта обители Ново-Нямецкого монастыря</p>
-
-<section id="auth" class="card">
-  <h2>Вход в обитель</h2>
-  <input id="l" placeholder="Логин (3–16 знаков, без пробелов)" autocomplete="username" maxlength="16">
-  <input id="p" type="password" placeholder="Пароль (от 4 знаков)" autocomplete="current-password" maxlength="64">
-  <p class="mut" style="margin:10px 0 0">Только при регистрации:</p>
-  <input id="n" placeholder="Имярек (имя, которое видно в игре)" maxlength="24">
-  <select id="g"><option value="m">Монах</option><option value="f">Монахиня</option></select>
-  <div class="err" id="err"></div>
-  <div class="row"><button id="bin">Войти</button><button id="breg" class="ghost">Зарегистрироваться</button></div>
-  <p class="mut">Каждый новый насельник начинает путь послушником (послушницей).</p>
+<section id="auth">
+  <div class="hero">
+    <div class="mark">☦</div>
+    <h1>Онлайн-монастырь</h1>
+    <p>Ново-Нямецкий монастырь, где собираются братия и сёстры. Мир вам, заходите.</p>
+  </div>
+  <div class="panel">
+    <div class="seg" id="mseg"><button data-m="in" class="on">Вход</button><button data-m="reg">Регистрация</button></div>
+    <label>Логин<input id="l" placeholder="3–16 знаков, без пробелов" autocomplete="username" maxlength="16"></label>
+    <label>Пароль<input id="p" type="password" placeholder="От 4 знаков" autocomplete="current-password" maxlength="64"></label>
+    <div id="regf" class="hide">
+      <label>Имярек<input id="n" placeholder="Имя, которое увидят в обители" maxlength="24"></label>
+      <div class="lbl">Кто вы?</div>
+      <div class="seg" id="gseg"><button data-g="m" class="on">Монах</button><button data-g="f">Монахиня</button></div>
+    </div>
+    <div class="err" id="err"></div>
+    <button class="big" id="go">Войти в обитель</button>
+    <p class="mut hint" id="hint">Нет аккаунта? Откройте вкладку «Регистрация».</p>
+  </div>
 </section>
 
 <section id="game" class="hide">
-  <div class="card row sp">
-    <div><b id="who"></b><br><span class="pill" id="rolen"></span></div>
-    <button class="ghost" id="out">Выйти</button>
-  </div>
-  <div class="card note hide" id="ann"></div>
-  <nav id="nav"></nav>
+  <header class="top">
+    <div><div class="hi" id="hi"></div><span class="pill" id="rolen"></span></div>
+    <button class="ghost sm" id="out">Выйти</button>
+  </header>
+  <div class="ann hide" id="ann"></div>
   <div id="t-map">
     <svg id="map" viewBox="0 0 400 440" role="img" aria-label="Карта монастыря"></svg>
-    <div class="row" id="chips"></div>
+    <div id="chips"></div>
     <div class="card" id="panel"></div>
   </div>
   <div id="t-cells" class="hide"></div>
@@ -71,11 +100,12 @@ nav button{white-space:nowrap}
   <div id="t-inbox" class="hide"></div>
   <div id="t-adm" class="hide"></div>
   <details class="card"><summary>Сменить пароль</summary>
-    <input id="npw" type="password" placeholder="Новый пароль (от 4 знаков)" maxlength="64" autocomplete="new-password">
-    <div class="row"><button class="ghost" id="npb">Сменить</button><span class="mut" id="npm"></span></div>
+    <input id="npw" type="password" placeholder="Новый пароль (от 4 знаков)" maxlength="64" autocomplete="new-password" style="margin-top:12px">
+    <div class="row"><button class="ghost sm" id="npb">Сменить пароль</button><span class="mut" id="npm"></span></div>
   </details>
 </section>
 </main>
+<nav id="nav" class="hide"></nav>
 <div id="toast" class="card note hide"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -99,8 +129,8 @@ const B=[
  {id:"gate",x:150,y:350,w:100,h:50,e:"🚪",s:"Врата",n:"Святые врата",d:"Вход в обитель. Выберите место на карте или в списке ниже."}
 ];
 const bid=id=>B.find(b=>b.id===id)||B[8];
-const TABS=[["map","🗺 Карта"],["cells","🏠 Кельи"],["bro","👥 Братия"],["inbox","✉ Письма"],["adm","🛡 Админ"]];
-let sb=null,me=null,all=[],ann="",notes=[],seen=0,tab="map",viewId=null,lastCall={},timers=[];
+const TABS=[["map","🗺","Карта"],["cells","🏠","Кельи"],["bro","👥","Братия"],["inbox","✉️","Письма"],["adm","🛡","Админ"]];
+let authMode="in",gsel="m",sb=null,me=null,all=[],ann="",notes=[],seen=0,tab="map",viewId=null,lastCall={},timers=[];
 
 const mail=k=>"m"+[...new TextEncoder().encode(k)].map(x=>x.toString(16).padStart(2,"0")).join("")+"@"+DOMAIN;
 const PW=p=>p+"!obitel";
@@ -115,7 +145,7 @@ function creds(){
  let l=$("#l").value.trim(),p=$("#p").value,k=l.toLowerCase();
  if(k==="admin"){k="админ";l="админ"}
  if(k==="админ"&&p.toLowerCase()==="admin")p="админ";
- return{l,k,p,n:$("#n").value.trim(),g:$("#g").value};
+ return{l,k,p,n:$("#n").value.trim(),g:gsel};
 }
 async function reg(){
  const{l,k,p,n,g}=creds();
@@ -147,7 +177,7 @@ async function boot(user,c){
  await sb.rpc("touch");
  await loadNotes(false);
  msg("");$("#p").value="";
- $("#auth").classList.add("hide");$("#game").classList.remove("hide");
+ $("#auth").classList.add("hide");$("#game").classList.remove("hide");$("#nav").classList.remove("hide");
  setTab("map");
  const un=notes.filter(n=>!n.read).length;if(un)toast("Непрочитанных писем: "+un);
  timers.forEach(clearInterval);
@@ -156,7 +186,7 @@ async function boot(user,c){
 async function leave(m){
  timers.forEach(clearInterval);timers=[];
  try{await sb.auth.signOut()}catch(e){}
- me=null;$("#game").classList.add("hide");$("#auth").classList.remove("hide");msg(m||"");
+ me=null;$("#game").classList.add("hide");$("#nav").classList.add("hide");$("#auth").classList.remove("hide");msg(m||"");
 }
 async function loadAll(){
  const r=await sb.from("roster").select("*");
@@ -200,14 +230,14 @@ function setTab(k){
  for(const[t]of TABS)$("#t-"+t).classList.toggle("hide",t!==k);
  render();window.scrollTo(0,0);
 }
-$("#nav").addEventListener("click",e=>{const k=e.target.dataset.t;if(k)setTab(k)});
+$("#nav").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b)setTab(b.dataset.t)});
 
 function render(soft){
  if(!me)return;
- $("#who").textContent=me.name;$("#rolen").textContent=rn(me);
+ $("#hi").textContent="Мир вам, "+me.name+"!";$("#rolen").textContent=rn(me);
  $("#ann").textContent=ann?"📣 "+ann:"";$("#ann").classList.toggle("hide",!ann);
  const un=notes.filter(n=>!n.read).length;
- $("#nav").innerHTML=TABS.filter(t=>t[0]!=="adm"||me.is_admin).map(([k,n])=>`<button data-t="${k}" class="${tab===k?"":"ghost"}">${n}${k==="inbox"&&un?" ("+un+")":""}</button>`).join("");
+ $("#nav").innerHTML=TABS.filter(t=>t[0]!=="adm"||me.is_admin).map(([k,e,n])=>`<button data-t="${k}" class="${tab===k?"on":""}"><span class="ic">${e}</span>${n}${k==="inbox"&&un?`<i class="bd">${un}</i>`:""}</button>`).join("");
  if(tab==="map")rMap();
  if(tab==="cells"&&!(soft&&viewId===me.id))rCells();
  if(tab==="bro")rBro();
@@ -217,7 +247,7 @@ function render(soft){
 
 // ---------- Карта ----------
 function rMap(){
- let s='<rect x="10" y="10" width="380" height="420" rx="14" fill="none" stroke="var(--wall)" stroke-width="3" stroke-dasharray="9 5"/><path d="M200 400V300M200 240V200M120 110h30M120 240h30M250 240h30M250 160h40M120 360h30" stroke="var(--wall)" stroke-width="2" opacity=".5" fill="none"/>';
+ let s='<rect x="10" y="10" width="380" height="420" rx="16" fill="var(--lawn)" stroke="var(--wall)" stroke-width="3"/><path d="M200 400V60M120 112H290M120 240H280M120 360H280" stroke="var(--path)" stroke-width="12" stroke-linecap="round" fill="none"/>';
  for(const b of B)s+=`<g class="b${me.pos===b.id?" sel":""}" data-b="${b.id}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8"/><text x="${b.x+b.w/2}" y="${b.y+b.h/2}" font-size="24" text-anchor="middle">${b.e}</text><text x="${b.x+b.w/2}" y="${b.y+b.h-8}" font-size="10" text-anchor="middle">${b.n}</text></g>`;
  for(const b of B){
   all.filter(p=>p.pos===b.id&&(p.online||p.id===me.id)).sort((a,c)=>(c.id===me.id)-(a.id===me.id)).slice(0,6).forEach((p,i)=>{
@@ -331,8 +361,21 @@ $("#npb").onclick=async()=>{
  const{error}=await sb.auth.updateUser({password:PW(p)});
  m.textContent=error?"Ошибка: "+error.message:"Пароль изменён.";if(!error)$("#npw").value="";
 };
-$("#breg").onclick=()=>sb&&reg();$("#bin").onclick=()=>sb&&login();$("#out").onclick=()=>leave();
-$("#p").addEventListener("keydown",e=>{if(e.key==="Enter"&&sb)login()});
+const go=()=>sb&&(authMode==="reg"?reg():login());
+$("#go").onclick=go;$("#out").onclick=()=>leave();
+$("#p").addEventListener("keydown",e=>{if(e.key==="Enter")go()});
+$("#mseg").addEventListener("click",e=>{
+ const m=e.target.dataset.m;if(!m)return;
+ authMode=m;msg("");
+ $("#regf").classList.toggle("hide",m!=="reg");
+ [...$("#mseg").children].forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+ $("#go").textContent=m==="reg"?"Принять в обитель":"Войти в обитель";
+ $("#hint").textContent=m==="reg"?"Каждый новый насельник начинает путь послушником или послушницей. Чины даёт архиепископ.":"Нет аккаунта? Откройте вкладку «Регистрация».";
+});
+$("#gseg").addEventListener("click",e=>{
+ const g=e.target.dataset.g;if(!g)return;
+ gsel=g;[...$("#gseg").children].forEach(b=>b.classList.toggle("on",b.dataset.g===g));
+});
 
 if(typeof supabase==="undefined"){msg("Не удалось загрузить библиотеку Supabase. Проверьте интернет.")}
 else{
