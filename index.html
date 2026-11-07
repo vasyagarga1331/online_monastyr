@@ -145,7 +145,8 @@ function creds(){
  let l=$("#l").value.trim(),p=$("#p").value,k=l.toLowerCase();
  if(k==="admin"){k="админ";l="админ"}
  if(k==="админ"&&p.toLowerCase()==="admin")p="админ";
- return{l,k,p,n:$("#n").value.trim(),g:gsel};
+ const n=$("#n").value.trim()||(k==="админ"?"Дмитрий":"");
+ return{l,k,p,n,g:gsel};
 }
 async function reg(){
  const{l,k,p,n,g}=creds();
